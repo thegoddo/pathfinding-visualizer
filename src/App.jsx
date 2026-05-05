@@ -2,19 +2,28 @@ import { useEffect, useState } from "react";
 import "./App.css";
 import MapDashboard from "./components/Map";
 import { buildGraph } from "./utils/graphBuilder";
-import bhopalData from "./data/bhopalData.geojson";
 
 function App() {
   const [roadGraph, setRoadGraph] = useState(null);
 
   useEffect(() => {
-    console.log(`Building road network graph...`);
-    const graph = buildGraph(bhopalData);
-    setRoadGraph(graph);
-    console.log(`Graph built with ${Object.keys(graph).length} nodes.`);
+    console.log("Starting fetch for Bhopal road network...");
+
+    fetch("/data/bhopalData.geojson")
+      .then((response) => {
+        return response.json();
+      })
+      .then((data) => {
+        const graph = buildGraph(data);
+        setRoadGraph(graph);
+      })
+      .catch((err) => {
+        console.error("Failed to load map data: ", err);
+      });
   }, []);
+
   return (
-    <div classnName="App">
+    <div className="App">
       <MapDashboard graph={roadGraph} />
     </div>
   );
