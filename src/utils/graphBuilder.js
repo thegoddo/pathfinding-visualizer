@@ -31,4 +31,6 @@ export const buildGraph = (geoJson) => {
       }
     }
   });
+    
+  return graph;
 };
