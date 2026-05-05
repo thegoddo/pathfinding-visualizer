@@ -1,7 +1,7 @@
 import { MapContainer, TileLayer } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 
-const Map = () => {
+const MapDashboard = () => {
   // Bhopal, Madhya Pradesh Coordinates
   const position = [23.2599, 77.4126];
 
@@ -25,4 +25,4 @@ const Map = () => {
   );
 };
 
-export default Map;
+export default MapDashboard;
