@@ -2,8 +2,12 @@ import {
   MapContainer,
   TileLayer,
   useMapEvents,
+  Marker,
+  Polyline,
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
+import { useState } from "react";
+import { findNearestNode } from "../utils/graphBuilder";
 
 // handles map clicks
 function ClickHandler({ onMapClick }) {
@@ -16,27 +20,43 @@ function ClickHandler({ onMapClick }) {
 }
 
 const MapDashboard = ({ graph }) => {
-  // Bhopal, Madhya Pradesh Coordinates
-  const position = [23.2599, 77.4126];
+  const [points, setPoints] = useState([]); // Stores the actual Graph Node IDs
+
+  const handleMapClick = (clickCoords) => {
+    if (!graph) return; // Wait until graph is built
+
+    // Use the graph to find the actual road intersection nearest to the click
+    const nearestNodeId = findNearestNode(clickCoords, graph);
+
+    if (points.length < 2) {
+      setPoints([...points, nearestNodeId]);
+    } else {
+      setPoints([nearestNodeId]);
+    }
+  };
 
   return (
     <MapContainer
-      center={position}
+      center={[23.2599, 77.4126]}
       zoom={13}
-      scrollWheelZoom={true}
-      style={{ height: "100vh", width: "100%" }}
+      style={{ height: "100vh" }}
     >
-      <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-      />
+      <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+      <ClickHandler onMapClick={handleMapClick} />
+
+      {/* Visualize selected Start and End nodes */}
+      {points.map((nodeId) => (
+        <Marker
+          key={nodeId}
+          position={[graph[nodeId].coords[1], graph[nodeId].coords[0]]}
+        />
+      ))}
 
       {/* 
-         TODO: Your Algorithms will render components here.
-         Example: <Polyline positions={path} color="blue" /> 
+         NEXT STEP: 
+         If points.length === 2, call AStar(graph, points[0], points[1])
       */}
     </MapContainer>
   );
 };
-
 export default MapDashboard;
