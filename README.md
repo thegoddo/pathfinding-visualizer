@@ -2,6 +2,10 @@
 
 A high-performance web application that visualizes graph traversal algorithms on real-world road networks.
 
+## Demo
+
+![Project Demo](./project.webm)
+
 ## Overview
 
 This project is an interactive tool designed to demonstrate and compare pathfinding efficiency using real-world data from OpenStreetMap (Bhopal). By converting geographic coordinates into a mathematical adjacency list, it visualizes how algorithms "think" when navigating complex urban environments.
