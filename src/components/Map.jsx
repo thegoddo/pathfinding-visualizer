@@ -49,23 +49,6 @@ const MapDashboard = ({ graph, mode, onToggleMode }) => {
     setPoints([]);
   }, [mode]);
 
-  useEffect(() => {
-    if (points.length === 2 && graph) startPathfinding(points[0], points[1]);
-  }, [points, graph]);
-
-  const handleMapClick = (coords) => {
-    if (!graph) return;
-    const nodeId = findNearestNode(coords, graph);
-    if (points.length < 2) {
-      setPoints([...points, nodeId]);
-    } else {
-      clearInterval(animationIntervalRef.current);
-      setAnimatingEdges([]);
-      setFinalPath([]);
-      setPoints([nodeId]);
-    }
-  };
-
   const startPathfinding = (startId, endId) => {
     // A* is used here (true). If walking, the graph passed in already has residential streets.
     const { path, visitedEdges } = runPathfinder(graph, startId, endId, true);
@@ -93,6 +76,22 @@ const MapDashboard = ({ graph, mode, onToggleMode }) => {
     }, config.interval);
   };
 
+  useEffect(() => {
+    if (points.length === 2 && graph) startPathfinding(points[0], points[1]);
+  }, [points, graph]);
+
+  const handleMapClick = (coords) => {
+    if (!graph) return;
+    const nodeId = findNearestNode(coords, graph);
+    if (points.length < 2) {
+      setPoints([...points, nodeId]);
+    } else {
+      clearInterval(animationIntervalRef.current);
+      setAnimatingEdges([]);
+      setFinalPath([]);
+      setPoints([nodeId]);
+    }
+  };
   return (
     <div style={{ position: "relative", height: "100vh", width: "100%" }}>
       {/* HUD Control Panel */}

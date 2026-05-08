@@ -7,15 +7,6 @@ function App() {
   const [roadGraph, setRoadGraph] = useState(null);
   const [mode, setMode] = useState("driving"); // "driving" or "walking"
 
-  useEffect(() => {
-    fetch("/data/bhopalData.geojson")
-      .then((res) => res.json())
-      .then((data) => {
-        setRawData(data);
-        generateGraph(data, "driving");
-      });
-  }, []);
-
   const generateGraph = (data, currentMode) => {
     const filteredFeatures = data.features.filter((f) => {
       const type = f.properties.highway;
@@ -29,6 +20,15 @@ function App() {
     const graph = buildGraph({ ...data, features: filteredFeatures });
     setRoadGraph(graph);
   };
+
+  useEffect(() => {
+    fetch("/data/bhopalData.geojson")
+      .then((res) => res.json())
+      .then((data) => {
+        setRawData(data);
+        generateGraph(data, "driving");
+      });
+  }, []);
 
   const toggleMode = () => {
     const newMode = mode === "driving" ? "walking" : "driving";
