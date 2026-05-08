@@ -1,30 +1,44 @@
 import { useEffect, useState } from "react";
-import "./App.css";
 import MapDashboard from "./components/Map";
 import { buildGraph } from "./utils/graphBuilder";
 
 function App() {
+  const [rawData, setRawData] = useState(null);
   const [roadGraph, setRoadGraph] = useState(null);
+  const [mode, setMode] = useState("driving"); // "driving" or "walking"
 
   useEffect(() => {
-    console.log("Starting fetch for Bhopal road network...");
-
     fetch("/data/bhopalData.geojson")
-      .then((response) => {
-        return response.json();
-      })
+      .then((res) => res.json())
       .then((data) => {
-        const graph = buildGraph(data);
-        setRoadGraph(graph);
-      })
-      .catch((err) => {
-        console.error("Failed to load map data: ", err);
+        setRawData(data);
+        generateGraph(data, "driving");
       });
   }, []);
 
+  const generateGraph = (data, currentMode) => {
+    const filteredFeatures = data.features.filter((f) => {
+      const type = f.properties.highway;
+      if (currentMode === "driving") {
+        return ["primary", "secondary", "tertiary"].includes(type);
+      }
+      // Walking includes everything
+      return true;
+    });
+
+    const graph = buildGraph({ ...data, features: filteredFeatures });
+    setRoadGraph(graph);
+  };
+
+  const toggleMode = () => {
+    const newMode = mode === "driving" ? "walking" : "driving";
+    setMode(newMode);
+    if (rawData) generateGraph(rawData, newMode);
+  };
+
   return (
     <div className="App">
-      <MapDashboard graph={roadGraph} />
+      <MapDashboard graph={roadGraph} mode={mode} onToggleMode={toggleMode} />
     </div>
   );
 }
