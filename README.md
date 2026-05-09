@@ -4,8 +4,7 @@ A high-performance web application that visualizes graph traversal algorithms on
 
 ## Demo
 
-![Project Demo](./project.webm)
-<video src="project.mp4" autoplay loop muted controls></video>
+![Project Demo](./project.gif)
 
 ## Overview
 
