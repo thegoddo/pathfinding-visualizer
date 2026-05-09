@@ -51,7 +51,7 @@ This ensures the heuristic is admissible, meaning it never overestimates the dis
 Clone the repository:
 
 ```bash
-git clone https://github.com/your-username/pathfinding-visualizer.git
+git clone https://github.com/thegoddo/pathfinding-visualizer.git
 ```
 
 Install dependencies:
