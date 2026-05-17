@@ -16,6 +16,7 @@ This project is an interactive tool designed to demonstrate and compare pathfind
 - Algorithm comparison:
   - A\* Search: Utilizes the Haversine formula as a heuristic for goal-oriented optimization.
   - Dijkstra's Algorithm: Guaranteed shortest path via uniform cost expansion.
+  - Near-Linear SSSP (labeled): Practical SSSP wrapper exposed in the UI as "Near-Linear SSSP" (implements a bidirectional shortest-path core for visual comparison).
 - Dynamic travel modes:
   - Driving: High-speed search using primary, secondary, and tertiary networks.
   - Walking: Detailed search including residential streets and society lanes.
@@ -23,6 +24,9 @@ This project is an interactive tool designed to demonstrate and compare pathfind
   - Dark and light mode toggles.
   - Variable animation speeds (Slow, Normal, Fast) for presentation purposes.
   - Real-time exploration statistics.
+  - Algorithm selector: choose between `A*`, `Dijikstra`, and `Near-Linear SSSP` from the bottom control.
+  - Runtime timer: shows the algorithm's execution time (measured for the search itself) once a path is found.
+  - ETA estimate: when a path is found the HUD shows an estimated travel time (ETA) computed from the path distance and the current mode (driving or walking).
 
 ## Technical Stack
 
@@ -65,6 +69,10 @@ Run the development server:
 ```bash
 npm run dev
 ```
+
+Feature notes
+- The ETA calculation uses a simple speed model (default: driving = 35 km/h, walking = 5 km/h). You can change these values in `src/components/Map.jsx` (the `TRAVEL_SPEED_KMH` constant).
+- The displayed `TIME` is the algorithm runtime (search computation), not the full animation time. The timer appears only after a path is successfully found.
 
 ## Contributors
 
