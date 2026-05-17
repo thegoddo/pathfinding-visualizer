@@ -9,7 +9,7 @@ import {
 import "leaflet/dist/leaflet.css";
 import { findNearestNode } from "../utils/graphBuilder";
 import { runPathfinder } from "../algorithms/pathfinders";
-import { Sun, Moon, Gauge, Footprints, Car } from "lucide-react";
+import { Sun, Moon, Gauge, Footprints, Car, ChevronDown } from "lucide-react";
 
 function ClickHandler({ onMapClick }) {
   useMapEvents({ click: (e) => onMapClick([e.latlng.lat, e.latlng.lng]) });
@@ -22,8 +22,11 @@ const MapDashboard = ({ graph, mode, onToggleMode }) => {
   const [finalPath, setFinalPath] = useState([]);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [speed, setSpeed] = useState("Normal");
+  const [selectedAlgorithm, setSelectedAlgorithm] = useState("A*");
+  const [isAlgorithmMenuOpen, setIsAlgorithmMenuOpen] = useState(false);
 
   const animationIntervalRef = useRef(null);
+  const algorithmOptions = ["A*", "Dijikstra", "SSSP"];
 
   const theme = {
     dark: {
@@ -40,6 +43,7 @@ const MapDashboard = ({ graph, mode, onToggleMode }) => {
     },
   };
   const currentTheme = isDarkMode ? theme.dark : theme.light;
+  const useHeuristic = selectedAlgorithm !== "Dijikstra";
 
   // Clear map if mode changes
   useEffect(() => {
@@ -50,8 +54,12 @@ const MapDashboard = ({ graph, mode, onToggleMode }) => {
   }, [mode]);
 
   const startPathfinding = (startId, endId) => {
-    // A* is used here (true). If walking, the graph passed in already has residential streets.
-    const { path, visitedEdges } = runPathfinder(graph, startId, endId, true);
+    const { path, visitedEdges } = runPathfinder(
+      graph,
+      startId,
+      endId,
+      useHeuristic,
+    );
     if (visitedEdges.length === 0) return;
 
     let index = 0;
@@ -92,8 +100,26 @@ const MapDashboard = ({ graph, mode, onToggleMode }) => {
       setPoints([nodeId]);
     }
   };
+
+  const handleAlgorithmSelect = (algorithm) => {
+    setSelectedAlgorithm(algorithm);
+    setIsAlgorithmMenuOpen(false);
+    clearInterval(animationIntervalRef.current);
+    setAnimatingEdges([]);
+    setFinalPath([]);
+    setPoints([]);
+  };
+
   return (
-    <div style={{ position: "relative", height: "100vh", width: "100%" }}>
+    <div
+      style={{
+        position: "relative",
+        height: "100vh",
+        width: "100%",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
       {/* HUD Control Panel */}
       <div
         style={{
@@ -189,61 +215,144 @@ const MapDashboard = ({ graph, mode, onToggleMode }) => {
         </button>
       </div>
 
-      <MapContainer
-        center={[23.2599, 77.4126]}
-        zoom={14}
-        style={{ height: "100%", width: "100%", background: currentTheme.bg }}
-        preferCanvas={true}
+      <div style={{ flex: 1, minHeight: 0 }}>
+        <MapContainer
+          center={[23.2599, 77.4126]}
+          zoom={14}
+          style={{ height: "100%", width: "100%", background: currentTheme.bg }}
+          preferCanvas={true}
+        >
+          <TileLayer
+            key={isDarkMode ? "d" : "l"}
+            url={currentTheme.tiles}
+            attribution="&copy; OSM"
+          />
+          <ClickHandler onMapClick={handleMapClick} />
+
+          {points[0] && (
+            <CircleMarker
+              center={[graph[points[0]].coords[1], graph[points[0]].coords[0]]}
+              pathOptions={{
+                color: "#00f2fe",
+                fillColor: "#00f2fe",
+                fillOpacity: 1,
+              }}
+              radius={7}
+            />
+          )}
+          {points[1] && (
+            <CircleMarker
+              center={[graph[points[1]].coords[1], graph[points[1]].coords[0]]}
+              pathOptions={{
+                color: "#ff4b5c",
+                fillColor: "#ff4b5c",
+                fillOpacity: 1,
+              }}
+              radius={7}
+            />
+          )}
+
+          {animatingEdges.map((edge, idx) => (
+            <Polyline
+              key={idx}
+              positions={[edge.from, edge.to]}
+              pathOptions={{
+                color: currentTheme.visited,
+                weight: mode === "walking" ? 1.5 : 2.5,
+                opacity: 0.6,
+              }}
+            />
+          ))}
+
+          {finalPath.length > 0 && (
+            <Polyline
+              positions={finalPath}
+              pathOptions={{ color: currentTheme.path, weight: 5, opacity: 1 }}
+            />
+          )}
+        </MapContainer>
+      </div>
+
+      <div
+        style={{
+          position: "relative",
+          zIndex: 1000,
+          padding: "14px 20px 20px",
+          display: "flex",
+          justifyContent: "center",
+          background: isDarkMode ? "#111" : "#f7f7f7",
+          borderTop: isDarkMode ? "1px solid #2a2a2a" : "1px solid #e7e7e7",
+        }}
       >
-        <TileLayer
-          key={isDarkMode ? "d" : "l"}
-          url={currentTheme.tiles}
-          attribution="&copy; OSM"
-        />
-        <ClickHandler onMapClick={handleMapClick} />
-
-        {points[0] && (
-          <CircleMarker
-            center={[graph[points[0]].coords[1], graph[points[0]].coords[0]]}
-            pathOptions={{
-              color: "#00f2fe",
-              fillColor: "#00f2fe",
-              fillOpacity: 1,
+        <div style={{ position: "relative" }}>
+          <button
+            onClick={() => setIsAlgorithmMenuOpen((open) => !open)}
+            style={{
+              background: isDarkMode ? "#1f1f1f" : "#fff",
+              border: isDarkMode ? "1px solid #343434" : "1px solid #d8d8d8",
+              color: isDarkMode ? "#fff" : "#111",
+              padding: "10px 16px",
+              borderRadius: "999px",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+              boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
+              fontWeight: 600,
             }}
-            radius={7}
-          />
-        )}
-        {points[1] && (
-          <CircleMarker
-            center={[graph[points[1]].coords[1], graph[points[1]].coords[0]]}
-            pathOptions={{
-              color: "#ff4b5c",
-              fillColor: "#ff4b5c",
-              fillOpacity: 1,
-            }}
-            radius={7}
-          />
-        )}
+          >
+            <span>Pathfinding</span>
+            <span style={{ color: isDarkMode ? "#9ca3af" : "#555" }}>
+              {selectedAlgorithm}
+            </span>
+            <ChevronDown size={16} />
+          </button>
 
-        {animatingEdges.map((edge, idx) => (
-          <Polyline
-            key={idx}
-            positions={[edge.from, edge.to]}
-            pathOptions={{
-              color: currentTheme.visited,
-              weight: mode === "walking" ? 1.5 : 2.5,
-              opacity: 0.6,
-            }}
-          />
-        ))}
+          {isAlgorithmMenuOpen && (
+            <div
+              style={{
+                position: "absolute",
+                left: 0,
+                bottom: "calc(100% + 10px)",
+                minWidth: "220px",
+                background: isDarkMode ? "#1b1b1b" : "#fff",
+                border: isDarkMode ? "1px solid #343434" : "1px solid #d8d8d8",
+                borderRadius: "18px",
+                padding: "8px",
+                boxShadow: "0 18px 40px rgba(0,0,0,0.18)",
+              }}
+            >
+              {algorithmOptions.map((option) => {
+                const isSelected = option === selectedAlgorithm;
 
-        {finalPath.length > 0 && (
-          <Polyline
-            positions={finalPath}
-            pathOptions={{ color: currentTheme.path, weight: 5, opacity: 1 }}
-          />
-        )}
-      </MapContainer>
+                return (
+                  <button
+                    key={option}
+                    onClick={() => handleAlgorithmSelect(option)}
+                    style={{
+                      width: "100%",
+                      textAlign: "left",
+                      padding: "10px 12px",
+                      borderRadius: "12px",
+                      border: "none",
+                      background: isSelected
+                        ? isDarkMode
+                          ? "rgba(255,255,255,0.08)"
+                          : "rgba(37,117,252,0.08)"
+                        : "transparent",
+                      color: isDarkMode ? "#fff" : "#111",
+                      cursor: "pointer",
+                      fontWeight: isSelected ? 700 : 500,
+                    }}
+                  >
+                    {option}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
