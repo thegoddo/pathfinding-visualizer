@@ -26,7 +26,7 @@ const MapDashboard = ({ graph, mode, onToggleMode }) => {
   const [isAlgorithmMenuOpen, setIsAlgorithmMenuOpen] = useState(false);
 
   const animationIntervalRef = useRef(null);
-  const algorithmOptions = ["A*", "Dijikstra", "SSSP"];
+  const algorithmOptions = ["A*", "Dijikstra", "Near-Linear SSSP"];
 
   const theme = {
     dark: {
