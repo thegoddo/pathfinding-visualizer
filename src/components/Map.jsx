@@ -16,6 +16,30 @@ function ClickHandler({ onMapClick }) {
   return null;
 }
 
+const TRAVEL_SPEED_KMH = {
+  driving: 35,
+  walking: 5,
+};
+
+const formatTravelTime = (minutes) => {
+  if (!Number.isFinite(minutes) || minutes <= 0) {
+    return "--";
+  }
+
+  if (minutes < 60) {
+    return `${minutes.toFixed(1)} min`;
+  }
+
+  const hours = Math.floor(minutes / 60);
+  const remainingMinutes = Math.round(minutes % 60);
+
+  if (remainingMinutes === 0) {
+    return `${hours} hr`;
+  }
+
+  return `${hours} hr ${remainingMinutes} min`;
+};
+
 const MapDashboard = ({ graph, mode, onToggleMode }) => {
   const [points, setPoints] = useState([]);
   const [animatingEdges, setAnimatingEdges] = useState([]);
@@ -25,6 +49,7 @@ const MapDashboard = ({ graph, mode, onToggleMode }) => {
   const [selectedAlgorithm, setSelectedAlgorithm] = useState("A*");
   const [isAlgorithmMenuOpen, setIsAlgorithmMenuOpen] = useState(false);
   const [elapsedTime, setElapsedTime] = useState(0);
+  const [estimatedTravelTime, setEstimatedTravelTime] = useState(0);
 
   const animationIntervalRef = useRef(null);
   const algorithmOptions = ["A*", "Dijikstra", "Near-Linear SSSP"];
@@ -55,9 +80,10 @@ const MapDashboard = ({ graph, mode, onToggleMode }) => {
   const startPathfinding = (startId, endId) => {
     setFinalPath([]);
     setElapsedTime(0);
+    setEstimatedTravelTime(0);
 
     const startedAt = performance.now();
-    const { path, visitedEdges } = runPathfinder(
+    const { path, visitedEdges, distance } = runPathfinder(
       graph,
       startId,
       endId,
@@ -69,6 +95,8 @@ const MapDashboard = ({ graph, mode, onToggleMode }) => {
 
     if (path.length > 0) {
       setElapsedTime(endedAt - startedAt);
+      const speedKmh = TRAVEL_SPEED_KMH[mode] ?? TRAVEL_SPEED_KMH.driving;
+      setEstimatedTravelTime((distance / speedKmh) * 60);
     }
 
     let index = 0;
@@ -192,6 +220,21 @@ const MapDashboard = ({ graph, mode, onToggleMode }) => {
               </span>
               <span style={{ fontSize: "18px", fontWeight: "bold" }}>
                 {elapsedTime.toFixed(2)} ms
+              </span>
+            </div>
+
+            <div style={{ width: "1px", height: "30px", background: "#444" }}></div>
+          </>
+        )}
+
+        {finalPath.length > 0 && estimatedTravelTime > 0 && (
+          <>
+            <div>
+              <span style={{ fontSize: "9px", color: "#888", display: "block" }}>
+                ETA
+              </span>
+              <span style={{ fontSize: "18px", fontWeight: "bold" }}>
+                {formatTravelTime(estimatedTravelTime)}
               </span>
             </div>
 
