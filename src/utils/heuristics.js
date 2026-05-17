@@ -1,4 +1,4 @@
-import { distance } from "turf";
+import distance from "@turf/distance";
 
 
 export const haversineDistance = (coords1, coords2) => {

@@ -1,4 +1,5 @@
-import { distance } from "turf";
+// import { distance } from "turf";
+import distance from "@turf/distance";
 
 export const buildGraph = (geoJson) => {
   const graph = {};

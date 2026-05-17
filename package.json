@@ -10,12 +10,12 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@turf/turf": "^7.3.5",
     "leaflet": "^1.9.4",
     "lucide-react": "^1.14.0",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
     "react-leaflet": "^5.0.0",
-    "turf": "^3.0.14",
     "zustand": "^5.0.13"
   },
   "devDependencies": {
