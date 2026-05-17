@@ -24,6 +24,7 @@ const MapDashboard = ({ graph, mode, onToggleMode }) => {
   const [speed, setSpeed] = useState("Normal");
   const [selectedAlgorithm, setSelectedAlgorithm] = useState("A*");
   const [isAlgorithmMenuOpen, setIsAlgorithmMenuOpen] = useState(false);
+  const [elapsedTime, setElapsedTime] = useState(0);
 
   const animationIntervalRef = useRef(null);
   const algorithmOptions = ["A*", "Dijikstra", "Near-Linear SSSP"];
@@ -52,13 +53,23 @@ const MapDashboard = ({ graph, mode, onToggleMode }) => {
   }, [mode]);
 
   const startPathfinding = (startId, endId) => {
+    setFinalPath([]);
+    setElapsedTime(0);
+
+    const startedAt = performance.now();
     const { path, visitedEdges } = runPathfinder(
       graph,
       startId,
       endId,
       selectedAlgorithm,
     );
+    const endedAt = performance.now();
+
     if (visitedEdges.length === 0) return;
+
+    if (path.length > 0) {
+      setElapsedTime(endedAt - startedAt);
+    }
 
     let index = 0;
     const config = {
@@ -95,6 +106,7 @@ const MapDashboard = ({ graph, mode, onToggleMode }) => {
       clearInterval(animationIntervalRef.current);
       setAnimatingEdges([]);
       setFinalPath([]);
+      setElapsedTime(0);
       setPoints([nodeId]);
     }
   };
@@ -105,6 +117,7 @@ const MapDashboard = ({ graph, mode, onToggleMode }) => {
     clearInterval(animationIntervalRef.current);
     setAnimatingEdges([]);
     setFinalPath([]);
+    setElapsedTime(0);
     setPoints([]);
   };
 
@@ -170,6 +183,21 @@ const MapDashboard = ({ graph, mode, onToggleMode }) => {
         </div>
 
         <div style={{ width: "1px", height: "30px", background: "#444" }}></div>
+
+        {finalPath.length > 0 && elapsedTime > 0 && (
+          <>
+            <div>
+              <span style={{ fontSize: "9px", color: "#888", display: "block" }}>
+                TIME
+              </span>
+              <span style={{ fontSize: "18px", fontWeight: "bold" }}>
+                {elapsedTime.toFixed(2)} ms
+              </span>
+            </div>
+
+            <div style={{ width: "1px", height: "30px", background: "#444" }}></div>
+          </>
+        )}
 
         <button
           onClick={() =>
