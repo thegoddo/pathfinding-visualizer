@@ -43,8 +43,6 @@ const MapDashboard = ({ graph, mode, onToggleMode }) => {
     },
   };
   const currentTheme = isDarkMode ? theme.dark : theme.light;
-  const useHeuristic = selectedAlgorithm !== "Dijikstra";
-
   // Clear map if mode changes
   useEffect(() => {
     clearInterval(animationIntervalRef.current);
@@ -58,7 +56,7 @@ const MapDashboard = ({ graph, mode, onToggleMode }) => {
       graph,
       startId,
       endId,
-      useHeuristic,
+      selectedAlgorithm,
     );
     if (visitedEdges.length === 0) return;
 
