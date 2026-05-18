@@ -10,6 +10,7 @@ import "leaflet/dist/leaflet.css";
 import { findNearestNode } from "../utils/graphBuilder";
 import { runPathfinder } from "../algorithms/pathfinders";
 import { Sun, Moon, Gauge, Footprints, Car, ChevronDown } from "lucide-react";
+import ZoomDebounce from "./ZoomDebounce";
 
 function ClickHandler({ onMapClick }) {
   useMapEvents({ click: (e) => onMapClick([e.latlng.lat, e.latlng.lng]) });
@@ -50,6 +51,7 @@ const MapDashboard = ({ graph, mode, onToggleMode }) => {
   const [isAlgorithmMenuOpen, setIsAlgorithmMenuOpen] = useState(false);
   const [elapsedTime, setElapsedTime] = useState(0);
   const [estimatedTravelTime, setEstimatedTravelTime] = useState(0);
+  const [mapZoomLevel, setMapZoomLevel] = useState(14);
 
   const animationIntervalRef = useRef(null);
   const algorithmOptions = ["A*", "Dijikstra", "Near-Linear SSSP"];
@@ -104,11 +106,11 @@ const MapDashboard = ({ graph, mode, onToggleMode }) => {
       Slow: { batch: 2, interval: 40 },
       Normal: { batch: 35, interval: 20 },
       Fast: { batch: 200, interval: 10 },
-    }[speed]; 
+    }[speed];
     const tempEdges = [];
 
     /**
-     * 
+     *
      */
     animationIntervalRef.current = setInterval(() => {
       if (index >= visitedEdges.length) {
@@ -116,10 +118,10 @@ const MapDashboard = ({ graph, mode, onToggleMode }) => {
         setFinalPath(path);
         return;
       }
-      
+
       /**
        * Batching multiple edges together to reduce number of re-renders an improve performance,
-       *  especially for large graphs with thousands of edges. 
+       *  especially for large graphs with thousands of edges.
        * Each batch will add a chunk of visited edges to the map at once, creating a smoother animation effect without overwhelming the browser.
        * Each batch is added on setInterval based on the configure speed.
        */
@@ -225,7 +227,9 @@ const MapDashboard = ({ graph, mode, onToggleMode }) => {
         {finalPath.length > 0 && elapsedTime > 0 && (
           <>
             <div>
-              <span style={{ fontSize: "9px", color: "#888", display: "block" }}>
+              <span
+                style={{ fontSize: "9px", color: "#888", display: "block" }}
+              >
                 TIME
               </span>
               <span style={{ fontSize: "18px", fontWeight: "bold" }}>
@@ -233,14 +237,18 @@ const MapDashboard = ({ graph, mode, onToggleMode }) => {
               </span>
             </div>
 
-            <div style={{ width: "1px", height: "30px", background: "#444" }}></div>
+            <div
+              style={{ width: "1px", height: "30px", background: "#444" }}
+            ></div>
           </>
         )}
 
         {finalPath.length > 0 && estimatedTravelTime > 0 && (
           <>
             <div>
-              <span style={{ fontSize: "9px", color: "#888", display: "block" }}>
+              <span
+                style={{ fontSize: "9px", color: "#888", display: "block" }}
+              >
                 ETA
               </span>
               <span style={{ fontSize: "18px", fontWeight: "bold" }}>
@@ -248,7 +256,9 @@ const MapDashboard = ({ graph, mode, onToggleMode }) => {
               </span>
             </div>
 
-            <div style={{ width: "1px", height: "30px", background: "#444" }}></div>
+            <div
+              style={{ width: "1px", height: "30px", background: "#444" }}
+            ></div>
           </>
         )}
 
@@ -297,7 +307,7 @@ const MapDashboard = ({ graph, mode, onToggleMode }) => {
       <div style={{ flex: 1, minHeight: 0 }}>
         <MapContainer
           center={[23.2599, 77.4126]}
-          zoom={14}
+          zoom={mapZoomLevel}
           maxZoom={16}
           style={{ height: "100%", width: "100%", background: currentTheme.bg }}
           preferCanvas={true}
@@ -308,6 +318,11 @@ const MapDashboard = ({ graph, mode, onToggleMode }) => {
             attribution="&copy; OSM"
           />
           <ClickHandler onMapClick={handleMapClick} />
+          <ZoomDebounce
+            onFinishedZoom={(zoom) => {
+              setMapZoomLevel(zoom);
+            }}
+          />
 
           {points[0] && (
             <CircleMarker
