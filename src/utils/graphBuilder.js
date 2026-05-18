@@ -39,6 +39,8 @@ export const findNearestNode = (clickCoords, graph) => {
   // We need to convert it to [lng, lat] for Turf
   const fromPoint = [clickCoords[1], clickCoords[0]];
 
+  //TODO: Optimize this by spatial indexing if performance becomes an issue
+  //TODO: implement KD-tree, R-tree, or geospatial library for efficient nearest neighbor search
   for (const nodeId in graph) {
     const nodeCoords = graph[nodeId].coords; // Already [lng, lat]
     const d = distance(fromPoint, nodeCoords);

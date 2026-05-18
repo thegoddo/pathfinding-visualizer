@@ -104,15 +104,25 @@ const MapDashboard = ({ graph, mode, onToggleMode }) => {
       Slow: { batch: 2, interval: 40 },
       Normal: { batch: 35, interval: 20 },
       Fast: { batch: 200, interval: 10 },
-    }[speed];
-
+    }[speed]; 
     const tempEdges = [];
+
+    /**
+     * 
+     */
     animationIntervalRef.current = setInterval(() => {
       if (index >= visitedEdges.length) {
         clearInterval(animationIntervalRef.current);
         setFinalPath(path);
         return;
       }
+      
+      /**
+       * Batching multiple edges together to reduce number of re-renders an improve performance,
+       *  especially for large graphs with thousands of edges. 
+       * Each batch will add a chunk of visited edges to the map at once, creating a smoother animation effect without overwhelming the browser.
+       * Each batch is added on setInterval based on the configure speed.
+       */
       for (let i = 0; i < config.batch && index < visitedEdges.length; i++) {
         tempEdges.push(visitedEdges[index]);
         index++;
