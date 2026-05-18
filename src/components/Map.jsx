@@ -298,6 +298,7 @@ const MapDashboard = ({ graph, mode, onToggleMode }) => {
         <MapContainer
           center={[23.2599, 77.4126]}
           zoom={14}
+          maxZoom={16}
           style={{ height: "100%", width: "100%", background: currentTheme.bg }}
           preferCanvas={true}
         >
