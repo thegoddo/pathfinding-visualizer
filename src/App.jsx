@@ -6,6 +6,7 @@ function App() {
   const [rawData, setRawData] = useState(null);
   const [roadGraph, setRoadGraph] = useState(null);
   const [mode, setMode] = useState("driving"); // "driving" or "walking"
+  const [cachedGraphs, setCachedGraphs] = useState({})
 
   const generateGraph = (data, currentMode) => {
     const filteredFeatures = data.features.filter((f) => {
@@ -18,7 +19,7 @@ function App() {
     });
 
     const graph = buildGraph({ ...data, features: filteredFeatures });
-    setRoadGraph(graph);
+    return graph;
   };
 
   useEffect(() => {
@@ -26,14 +27,28 @@ function App() {
       .then((res) => res.json())
       .then((data) => {
         setRawData(data);
-        generateGraph(data, "driving");
+        const drivingGraph = generateGraph(data, "driving");
+        const walkingGraph = generateGraph(data, "walking");
+        setCachedGraphs({
+          driving: drivingGraph,
+          walking: walkingGraph,
+        });
+        setRoadGraph(drivingGraph);
       });
   }, []);
 
   const toggleMode = () => {
     const newMode = mode === "driving" ? "walking" : "driving";
     setMode(newMode);
-    if (rawData) generateGraph(rawData, newMode);
+    const cached = cachedGraphs[newMode];
+
+    if(cached) {
+      setRoadGraph(cachedGraphs[newMode]);
+    } else if (rawData){
+      const newGraph = generateGraph(rawData, newMode);
+      setCachedGraphs(prev => ({ ...prev, [newMode]: newGraph }));
+      setRoadGraph(newGraph);
+    }
   };
 
   return (
